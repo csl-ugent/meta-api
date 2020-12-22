@@ -1,0 +1,281 @@
+<specification>
+  <configuration>
+    <parameter name="init_function" value="DIABLO_Profiling_InitDone" />
+    <parameter name="project_name" value="radare2" />
+  </configuration>
+
+  <datatypes>
+    <datatype name="void" library="maDatatypeVoid" />
+    <datatype name="int" library="maDatatypeInteger" />
+
+    <datatype name="bool" alias="int" />
+    <datatype name="size_t" alias="int" />
+
+    <datatype name="RGraphNode" alias="void">
+    </datatype>
+
+    <datatype name="RGraph">
+      <functions>
+        <function type="constructor" returntype="RGraph*" identifier="r_graph_new" can_be_external="true">
+        </function>
+
+        <function type="interface" returntype="RGraphNode*" identifier="r_graph_add_node" can_be_external="true">
+          <parameter datatype="RGraph*" name="graph" />
+          <parameter datatype="void*" name="data" />
+        </function>
+
+        <function type="interface" returntype="void" identifier="r_graph_add_edge" can_be_external="true">
+          <parameter datatype="RGraph*" name="graph" />
+          <parameter datatype="RGraphNode*" name="from" />
+          <parameter datatype="RGraphNode*" name="to" />
+        </function>
+
+        <function type="interface" returntype="void" identifier="r_graph_del_edge" can_be_external="true">
+          <parameter datatype="RGraph*" name="graph" />
+          <parameter datatype="RGraphNode*" name="from" />
+          <parameter datatype="RGraphNode*" name="to" />
+        </function>
+
+        <function type="interface" returntype="int" identifier="r_graph_adjacent" can_be_external="true">
+          <parameter datatype="RGraph*" name="graph" />
+          <parameter datatype="RGraphNode*" name="from" />
+          <parameter datatype="RGraphNode*" name="to" />
+        </function>
+
+        <function type="interface" returntype="RList *" identifier="r_graph_get_nodes" can_be_external="true">
+          <parameter datatype="RGraph*" name="graph" />
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P0_true">
+          <effects>
+            <effect>
+              <expression>P0=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            IF !(r_graph_adjacent($[instance], $$$nodes[1], $$$nodes[2]))
+              r_graph_add_edge($[instance], $$$nodes[1], $$$nodes[2]);
+            END;
+
+            IF !(r_graph_adjacent($[instance], $$$nodes[2], $$$nodes[4]))
+              r_graph_add_edge($[instance], $$$nodes[2], $$$nodes[4]);
+            END;
+
+            IF !(r_graph_adjacent($[instance], $$$nodes[4], $$$nodes[5]))
+              r_graph_add_edge($[instance], $$$nodes[4], $$$nodes[5]);
+            END;
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P0_false1">
+          <effects>
+            <effect>
+              <expression>P0=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            r_graph_del_edge($[instance], $$$nodes[2], $$$nodes[4]);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P0_false2">
+          <effects>
+            <effect>
+              <expression>P0=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            r_graph_del_edge($[instance], $$$nodes[1], $$$nodes[2]);
+            r_graph_del_edge($[instance], $$$nodes[2], $$$nodes[4]);
+            r_graph_del_edge($[instance], $$$nodes[4], $$$nodes[5]);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P1_true">
+          <effects>
+            <effect>
+              <expression>P1=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            /* add a random loop edge */
+            this_node_int x = $[generate];
+
+            IF !(r_graph_adjacent($[instance], $$$nodes[$x], $$$nodes[$x]))
+              r_graph_add_edge($[instance], $$$nodes[$x], $$$nodes[$x]);
+            END;
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P1_false">
+          <effects>
+            <effect>
+              <expression>P1=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            /* remove any loop edges */
+            int index;
+
+            $index = 0;
+            WHILE ($index &lt; 6)
+              r_graph_del_edge($[instance], $$$nodes[$index], $$$nodes[$index]);
+              $index = $index + 1;
+            END;
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P2_true">
+          <effects>
+            <effect>
+              <expression>P2=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            this_node_int a = $[generate];
+            this_node_int b = $[generate];
+
+            $$$selected1 = $$$nodes[$a];
+            $$$selected2 = $$$nodes[$b];
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P2_false">
+          <effects>
+            <effect>
+              <expression>P2=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            this_node_int a = $[generate];
+            that_node_int b = $[generate];
+
+            $$$selected1 = $$$nodes[$a];
+            $$$selected2 = $$$nodes[$b];
+          </implementation>
+        </function>
+      </functions>
+
+      <predicates>
+        <predicate name="P0">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P0">
+            <implementation>
+              IF !(r_graph_adjacent($[instance], $$$nodes[1], $$$nodes[2]))
+                RETURN 0;
+              END;
+              IF !(r_graph_adjacent($[instance], $$$nodes[2], $$$nodes[4]))
+                RETURN 0;
+              END;
+              IF !(r_graph_adjacent($[instance], $$$nodes[4], $$$nodes[5]))
+                RETURN 0;
+              END;
+
+              RETURN 1;
+            </implementation>
+          </function>
+        </predicate>
+
+        <predicate name="P1">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P1">
+            <implementation>
+              int index;
+
+              $index = 0;
+              WHILE ($index &lt; 6)
+                IF (r_graph_adjacent($[instance], $$$nodes[$index], $$$nodes[$index]))
+                  RETURN 1;
+                END;
+
+                $index = $index + 1;
+              END;
+
+              RETURN 0;
+            </implementation>
+          </function>
+        </predicate>
+
+        <predicate name="P2">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P2">
+            <implementation>
+              RList *nodes;
+
+              $nodes = r_graph_get_nodes($[instance]);
+              IF !(r_list_contains($nodes, $$$selected1))
+                RETURN 0;
+              END;
+              IF !(r_list_contains($nodes, $$$selected2))
+                RETURN 0;
+              END;
+
+              RETURN 1;
+            </implementation>
+          </function>
+        </predicate>
+      </predicates>
+
+      <instance>
+        <variables>
+          RGraphNode *nodes[9];
+          RGraphNode *selected1;
+          RGraphNode *selected2;
+
+          RGraph *that;
+        </variables>
+
+        <implementation>
+          $$$nodes[0] = r_graph_add_node($[instance], 0);
+          $$$nodes[1] = r_graph_add_node($[instance], 0);
+          $$$nodes[2] = r_graph_add_node($[instance], 0);
+          $$$nodes[3] = r_graph_add_node($[instance], 0);
+          $$$nodes[4] = r_graph_add_node($[instance], 0);
+          $$$nodes[5] = r_graph_add_node($[instance], 0);
+
+          $$$that = r_graph_new();
+          $$$nodes[6] = r_graph_add_node($$$that, 0);
+          $$$nodes[7] = r_graph_add_node($$$that, 0);
+          $$$nodes[8] = r_graph_add_node($$$that, 0);
+        </implementation>
+      </instance>
+    </datatype>
+
+    <datatype name="RList">
+      <functions>
+        <function type="interface" returntype="bool" identifier="r_list_contains" can_be_external="true">
+          <parameter datatype="RList*" name="list" />
+          <parameter datatype="void*" name="data" />
+        </function>
+      </functions>
+    </datatype>
+
+    <datatype name="this_node_int">
+      <values>
+        <value type="int" expression="RANGE(0, 5)" />
+      </values>
+    </datatype>
+
+    <datatype name="that_node_int">
+      <values>
+        <value type="int" expression="RANGE(6, 8)" />
+      </values>
+    </datatype>
+  </datatypes>
+
+  <tests>
+    <test name="P0_T" datatype="RGraph" predicate="P0" value="T" setter="ABSTRACT_set_P0_true" getter="ABSTRACT_get_P0" function="DIABlO_measure" resetter="ABSTRACT_set_P0_false1" />
+    <test name="P0_F1" datatype="RGraph" predicate="P0" value="F" setter="ABSTRACT_set_P0_false1" getter="ABSTRACT_get_P0" function="DIABlO_measure" resetter="ABSTRACT_set_P0_false2" />
+    <test name="P0_F2" datatype="RGraph" predicate="P0" value="F" setter="ABSTRACT_set_P0_false2" getter="ABSTRACT_get_P0" function="DIABlO_measure" resetter="ABSTRACT_set_P0_true"  />
+
+    <test name="P1_T" datatype="RGraph" predicate="P1" value="T" setter="ABSTRACT_set_P1_true" getter="ABSTRACT_get_P1" function="DIABlO_measure" resetter="ABSTRACT_set_P1_false" />
+    <test name="P1_F" datatype="RGraph" predicate="P1" value="F" setter="ABSTRACT_set_P1_false" getter="ABSTRACT_get_P1" function="DIABlO_measure" />
+
+    <test name="P2_T" datatype="RGraph" predicate="P2" value="T" setter="ABSTRACT_set_P2_true" getter="ABSTRACT_get_P2" function="DIABlO_measure" resetter="ABSTRACT_set_P2_false" />
+    <test name="P2_F" datatype="RGraph" predicate="P2" value="F" setter="ABSTRACT_set_P2_false" getter="ABSTRACT_get_P2" function="DIABlO_measure" />
+  </tests>
+</specification>

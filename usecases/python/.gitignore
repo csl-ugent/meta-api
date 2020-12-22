@@ -1,0 +1,4 @@
+install/
+Python-*/
+diablo/
+*.tar.xz

@@ -1,0 +1,24 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2285357..4ff3e51 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.15)
+ cmake_policy(SET CMP0091 NEW)
+ project(ninja)
+ 
++include($ENV{CROSS_ROOT}/_helpers/diablo.cmake)
++
+ if(CMAKE_BUILD_TYPE MATCHES "Release")
+ 	cmake_policy(SET CMP0069 NEW)
+ 	include(CheckIPOSupported)
+@@ -84,8 +86,9 @@ target_compile_definitions(libninja PRIVATE _WIN32_WINNT=0x0601 __USE_MINGW_ANSI
+ endif()
+ 
+ # Main executable is library plus main() function.
+-add_executable(ninja src/ninja.cc)
++add_executable(ninja src/ninja.cc ${CMAKE_SOURCE_DIR}/../meta-api/linkin.cc)
+ target_link_libraries(ninja PRIVATE libninja libninja-re2c)
++target_include_directories(ninja PRIVATE ${CMAKE_SOURCE_DIR})
+ 
+ # Tests all build into ninja_test executable.
+ add_executable(ninja_test

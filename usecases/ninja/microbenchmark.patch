@@ -1,0 +1,25 @@
+diff -ru ninja/src/ninja.cc ninja_test/src/ninja.cc
+--- ninja/src/ninja.cc  2020-09-01 11:47:00.967917080 +0200
++++ ninja_test/src/ninja.cc     2020-12-11 15:16:47.484158907 +0100
+@@ -1434,7 +1434,21 @@
+ 
+ }  // anonymous namespace
+ 
++
+ int main(int argc, char** argv) {
++#define ASM __asm__
++       ASM ("nop");
++
++#define NR_ITERATIONS 250000000
++    register unsigned int i = 0;
++    for (i = 0; i < NR_ITERATIONS; i++) {
++        ASM ("nop");
++        ASM ("nop");
++        ASM ("nop");
++    }
++
++    if (i == NR_ITERATIONS)
++      exit(0);
+ #if defined(_MSC_VER)
+   // Set a handler to catch crashes not caught by the __try..__except
+   // block (e.g. an exception in a stack-unwind-block).

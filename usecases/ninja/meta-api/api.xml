@@ -1,0 +1,445 @@
+<specification>
+  <configuration>
+    <parameter name="not_before_function" value="main" />
+
+    <!-- have a look at the dot graphs for 'main' and 'real_main'.
+    Here we see the mismodelling issues of 'exit' in Diablo.
+    Hence the 'latest executed block' parameter -->
+    <parameter name="not_after_latest_in_function" value="_ZN12_GLOBAL__N_19real_mainEiPPc" />
+
+    <!-- custom initialisation function override -->
+    <parameter name="init_function" value="_Z23__DIABLO_META_API__initv" />
+
+    <parameter name="project_name" value="ninja" />
+  </configuration>
+
+  <variables>
+    global_int g_x;
+  </variables>
+
+  <datatypes>
+    <datatype name="void" library="maDatatypeVoid" />
+    <datatype name="int" library="maDatatypeInteger" />
+
+    <datatype name="bool" alias="int" />
+    <datatype name="size_t" alias="int" />
+
+    <datatype name="Edge" alias="void" />
+
+    <datatype name="_Rb_tree_node_base">
+      <members>
+        <member name="_M_color" offset="0" />
+      </members>
+    </datatype>
+
+    <datatype name="_Rb_tree_impl">
+      <members>
+        <member name="_M_header" offset="4" />
+      </members>
+    </datatype>
+
+    <!-- size can't be zero, but we don't instantiate this class so that's OK for now -->
+    <datatype name="_Rb_tree_node" class="true" size="-1">
+      <members>
+        <member name="_M_parent" offset="4" />
+      </members>
+
+      <functions>
+
+        <function type="interface" returntype="int" identifier="_ZNKSt13_Rb_tree_nodeIP4EdgeE9_M_valptrEv">
+        </function>
+
+        <function type="interface" returntype="_Rb_tree_node*" identifier="_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base" can_be_external="true" is_member="false">
+          <parameter datatype="_Rb_tree_node*" name="it" />
+        </function>
+      </functions>
+    </datatype>
+
+    <datatype name="_Rb_tree" class="true" size="24">
+      <members>
+        <member datatype="_Rb_tree_impl*" name="_M_impl" offset="0" />
+        <member datatype="_Rb_tree_node*" name="_M_begin" offset="8" />
+
+        <!-- this is a shortcut (_M_left is actually in a _Rb_tree_node),
+        but the member is stored at this offset within the _rb_tree for the _M_header. -->
+        <member datatype="_Rb_tree_node*" name="_M_left" offset="12" />
+      </members>
+
+      <functions>
+        <function type="implementedconstructor" returntype="_Rb_tree*" identifier="_Z35__DIABLO_META_API__constructor_treev" is_member="false">
+          <!-- no parameters -->
+        </function>
+
+        <!--
+          _M_insert_unique(T)
+        -->
+        <function type="interface" returntype="void" identifier="_Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_">
+          <!-- <parameter datatype="Edge *" name="e" /> -->
+          <parameter datatype="random_int" name="e" />
+        </function>
+
+        <!--
+          _M_get_insert_unique_pos(e);
+
+          result == 0 if 'e' is not found
+          result != 0 if 'e' is found
+        -->
+        <function type="interface" returntype="_Rb_tree_node_base *" identifier="_Z43__DIABLO_META_API___M_get_insert_unique_posPSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_">
+          <parameter datatype="Edge *" name="e" />
+        </function>
+
+        <!--
+          _Rb_tree_rebalance_for_erase(n, tree->_M_impl._M_header)
+        -->
+        <function type="interface" returntype="void" identifier="_ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_" is_member="false" can_be_external="true">
+          <parameter datatype="_Rb_tree_node*" name="node" />
+          <parameter datatype="_Rb_tree_node*" name="root" />
+        </function>
+
+        <!--
+          _M_drop_node(n)
+        -->
+        <function type="interface" returntype="void" identifier="_ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE12_M_drop_nodeEPSt13_Rb_tree_nodeIS1_E">
+          <parameter datatype="_Rb_tree_node*" name="node" />
+        </function>
+
+        <function type="interface" returntype="_Rb_tree_node *" identifier="_ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE6_M_endEv">
+        </function>
+
+        <!-- P0->T by removing the odd nodes from the tree -->
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P0_true">
+          <effects>
+            <effect>
+              <!-- as elements are erased, P2 and P3 are unknown -->
+              <expression>P0=T, P2=?, P3=?</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            /* variables used in this pseudo-code */
+            _Rb_tree_node *node;
+            _Rb_tree_node *endnode;
+            void *pointer;
+            int value;
+            _Rb_tree_impl *impl;
+
+            WHILE (1)
+              $node = $[instance]._M_left;
+
+              /* no more nodes in the tree */
+              IF ($node == 0)
+                BREAK;
+              END;
+
+              $endnode = _ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE6_M_endEv($[instance]);
+
+              WHILE ($node != $endnode)
+                /* get node value */
+                $pointer = _ZNKSt13_Rb_tree_nodeIP4EdgeE9_M_valptrEv($node);
+                $value = * $pointer;
+
+                /* erase node if value is odd */
+                IF ($value % 2)
+                  $impl = & $[instance]._M_impl;
+
+                  _ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_($node, & $impl._M_header);
+                  _ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE12_M_drop_nodeEPSt13_Rb_tree_nodeIS1_E($[instance], $node);
+
+                  /* we have erased a node, restart iteration */
+                  BREAK;
+                END;
+
+                $node = _ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base($node);
+              END;
+
+              IF ($node == $endnode)
+                BREAK;
+              END;
+            END;
+          </implementation>
+
+          <!-- This will break the lookup algorithm as that assumes that each element can be 
+           in the tree only once. With this code, chances are that two nodes in the tree will
+           have the same value. The meta-API is capable of processing the pseudo-code, though. -->
+          <!-- <implementation>
+            _Rb_tree_node *node;
+            _Rb_tree_node *endnode;
+            void *pointer;
+            int value;
+
+            $node = $[instance]._M_begin;
+            $endnode = _ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE6_M_endEv($[instance]);
+            WHILE ($node != $endnode)
+              $pointer = _ZNKSt13_Rb_tree_nodeIP4EdgeE9_M_valptrEv($node);
+
+              $value = * $pointer;
+              IF ($value % 2)
+                $value = $value + 1;
+                * $pointer = $value;
+              END;
+
+              $node = _ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base($node);
+            END;
+
+            RETURN;
+          </implementation> -->
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P0_false">
+          <effects>
+            <effect>
+              <expression>P0=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            odd_int value = $[generate];
+
+            _Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($[instance], $value);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P2_true">
+          <effects>
+            <effect>
+              <expression>P2=T, P0=?</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            _Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($[instance], $$g_x);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P2_false">
+          <effects>
+            <effect>
+              <expression>P2=F, P3=?</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            _Rb_tree_node *x;
+            _Rb_tree_impl *impl;
+            
+            $x = _Z43__DIABLO_META_API___M_get_insert_unique_posPSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($[instance], $$g_x);
+            IF ($x == 0)
+              RETURN;
+            END;
+
+            $impl = & $[instance]._M_impl;
+
+            _ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_($x, & $impl._M_header);
+            _ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE12_M_drop_nodeEPSt13_Rb_tree_nodeIS1_E($[instance], $x);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P3_true">
+          <effects>
+            <effect>
+              <expression>P3=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            $$$N1 = $[instance]._M_left;
+            $$$N2 = $[instance]._M_left;
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P3_false">
+          <effects>
+            <effect>
+              <expression>P3=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            $$$N1 = $[instance]._M_left;
+            $$$N2 = $$$that._M_left;
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_P3">
+          <effects>
+            <effect>
+              <expression>P3=F</expression>
+              <constraint>$x INSTANCEOF "odd_int"</constraint>
+            </effect>
+
+            <effect>
+              <expression>P3=T</expression>
+              <constraint>$x INSTANCEOF "even_int"</constraint>
+            </effect>
+          </effects>
+
+          <implementation>
+            void x = $[generate];
+
+            $$$N1 = $[instance]._M_left;
+
+            IF ($x % 2)
+              $$$N2 = $$$that._M_left;
+              RETURN;
+            END;
+
+            $$$N2 = $[instance]._M_left;
+          </implementation>
+        </function>
+      </functions>
+
+      <predicates>
+        <!-- all node values even? -->
+        <predicate name="P0">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P0">
+            <implementation>
+              _Rb_tree_node *node;
+              _Rb_tree_node *endnode;
+              int value;
+
+              $node = $[instance]._M_left;
+              IF ($node == 0)
+                /* no nodes -> TRUE */
+                RETURN 1;
+              END;
+
+              $endnode = _ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE6_M_endEv($[instance]);
+              WHILE ($node != $endnode)
+                $value = * _ZNKSt13_Rb_tree_nodeIP4EdgeE9_M_valptrEv($node);
+
+                IF ($value % 2)
+                  RETURN 0;
+                END;
+
+                $node = _ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base($node);
+              END;
+
+              RETURN 1;
+            </implementation>
+          </function>
+        </predicate>
+
+        <!-- fixed value predicate: root node is always red, always returns TRUE -->
+        <!-- TODO: this predicate will cause a segfault when the tree is empty (I assume),
+        so disable this predicate for now. -->
+        <predicate name="P1" type="invariant" value="T" enabled="false">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P1">
+            <implementation>
+              _Rb_tree_impl *impl;
+              _Rb_tree_node_base *root;
+
+              $impl = & $[instance]._M_impl;
+              $root = & $impl._M_header;
+
+              RETURN $root._M_color == 0;
+            </implementation>
+          </function>
+        </predicate>
+
+        <!-- element X present? -->
+        <predicate name="P2">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P2">
+            <implementation>
+              _Rb_tree_node *x;
+              $x = _Z43__DIABLO_META_API___M_get_insert_unique_posPSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($[instance], $$g_x);
+              RETURN $x != 0;
+            </implementation>
+          </function>
+        </predicate>
+
+        <!-- N1 and N2 point to nodes in the same tree? -->
+        <predicate name="P3">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_P3">
+            <implementation>
+              _Rb_tree_node *node;
+              _Rb_tree_node *endnode;
+              int result;
+
+              $result = 0;
+
+              $node = $[instance]._M_left;
+              IF !($node == 0)
+                $endnode = _ZNSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE6_M_endEv($[instance]);
+                WHILE ($node != $endnode)
+                  IF ($$$N1 == $node)
+                    $result = $result + 1;
+                  END;
+                  IF ($$$N2 == $node)
+                    $result = $result + 2;
+                  END;
+
+                  $node = _ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base($node);
+                END;
+
+                _Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($$$that, $[generate]);
+              END;
+
+              /* 3 if both nodes were found */
+              RETURN $result == 3;
+            </implementation>
+          </function>
+        </predicate>
+      </predicates>
+
+      <instance>
+        <variables>
+          _Rb_tree_node *N1;
+          _Rb_tree_node *N2;
+
+          _Rb_tree *that;
+        </variables>
+
+        <implementation>
+          _Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($[instance], $[generate]);
+          _Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($[instance], $[generate]);
+
+          $$$that = _Z35__DIABLO_META_API__constructor_treev();
+          _Z35__DIABLO_META_API___M_insert_uniquePSt8_Rb_treeIP4EdgeS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EES1_($$$that, $[generate]);
+        </implementation>
+      </instance>
+    </datatype>
+
+    <datatype name="even_int">
+      <values>
+        <value type="int" expression="EVEN(1, 100)" />
+      </values>
+    </datatype>
+
+    <datatype name="odd_int">
+      <values>
+        <value type="int" expression="ODD(1, 100)" />
+      </values>
+    </datatype>
+
+    <datatype name="random_int">
+      <values>
+        <value type="int" expression="RANGE(0, 100)" />
+      </values>
+    </datatype>
+
+    <datatype name="global_int">
+      <values>
+        <value type="int" expression="RANGE(315, 13546)" />
+      </values>
+    </datatype>
+  </datatypes>
+
+  <tests>
+    <test name="P0_T" datatype="_Rb_tree" predicate="P0" value="T" setter="ABSTRACT_set_P0_true" getter="ABSTRACT_get_P0" resetter="ABSTRACT_set_P0_false" function="main" />
+    <test name="P0_F" datatype="_Rb_tree" predicate="P0" value="F" setter="ABSTRACT_set_P0_false" getter="ABSTRACT_get_P0" function="main" />
+
+    <test name="P1" datatype="_Rb_tree" predicate="P1" value="T" setter="DOES_NOT_EXIST" getter="ABSTRACT_get_P1" function="main" />
+    <!-- fixed TRUE, so no FALSE test needed -->
+
+    <test name="P2_T" datatype="_Rb_tree" predicate="P2" value="T" setter="ABSTRACT_set_P2_true" getter="ABSTRACT_get_P2" function="main" resetter="ABSTRACT_set_P2_false" />
+    <test name="P2_F" datatype="_Rb_tree" predicate="P2" value="F" setter="ABSTRACT_set_P2_false" getter="ABSTRACT_get_P2" function="main" />
+
+    <test name="P3_T" datatype="_Rb_tree" predicate="P3" value="T" setter="ABSTRACT_set_P3_true" getter="ABSTRACT_get_P3" function="main" resetter="ABSTRACT_set_P3_false" />
+    <test name="P3_Ta" datatype="_Rb_tree" predicate="P3" value="T" setter="ABSTRACT_set_P3_true" getter="ABSTRACT_get_P3" function="main" resetter="ABSTRACT_set_P3" resetter_constraint="1" />
+    <test name="P3_Tb" datatype="_Rb_tree" predicate="P3" value="T" setter="ABSTRACT_set_P3_true" getter="ABSTRACT_get_P3" function="main" resetter="ABSTRACT_set_P3" resetter_constraint="0" />
+    <test name="P3_F" datatype="_Rb_tree" predicate="P3" value="F" setter="ABSTRACT_set_P3_false" getter="ABSTRACT_get_P3" function="main" resetter="ABSTRACT_set_P3" resetter_constraint="1" />
+    <test name="P3_Fa" datatype="_Rb_tree" predicate="P3" value="F" setter="ABSTRACT_set_P3_false" getter="ABSTRACT_get_P3" function="main" resetter="ABSTRACT_set_P3" resetter_constraint="0" />
+    <test name="P3_T2" datatype="_Rb_tree" predicate="P3" value="T" setter="ABSTRACT_set_P3" setter_constraint="1" getter="ABSTRACT_get_P3" function="main" resetter="ABSTRACT_set_P3" resetter_constraint="0" />
+    <test name="P3_F2" datatype="_Rb_tree" predicate="P3" value="F" setter="ABSTRACT_set_P3" setter_constraint="0" getter="ABSTRACT_get_P3" function="main" />
+  </tests>
+</specification>

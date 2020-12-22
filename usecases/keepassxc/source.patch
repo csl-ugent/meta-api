@@ -1,0 +1,25 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8b41f39..2de5daa 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,6 +17,7 @@
+ cmake_minimum_required(VERSION 3.1.0)
+ 
+ project(KeePassXC)
++include($ENV{CROSS_ROOT}/_helpers/diablo.cmake)
+ 
+ if(NOT CMAKE_BUILD_TYPE)
+     set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
+diff --git a/src/cli/CMakeLists.txt b/src/cli/CMakeLists.txt
+index 5959bf3..5b0ca20 100644
+--- a/src/cli/CMakeLists.txt
++++ b/src/cli/CMakeLists.txt
+@@ -50,7 +50,7 @@ if (READLINE_FOUND)
+     target_link_libraries(cli readline)
+ endif()
+ 
+-add_executable(keepassxc-cli keepassxc-cli.cpp)
++add_executable(keepassxc-cli keepassxc-cli.cpp ${CMAKE_SOURCE_DIR}/../meta-api/linkin.cc)
+ target_link_libraries(keepassxc-cli
+         cli
+         keepassx_core

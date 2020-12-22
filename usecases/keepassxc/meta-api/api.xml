@@ -1,0 +1,346 @@
+<specification>
+  <configuration>
+    <parameter name="not_before_function" value="main" />
+    <parameter name="not_after_function" value="main" />
+    <parameter name="project_name" value="keepassxc" />
+  </configuration>
+
+  <datatypes>
+    <!-- library-defined -->
+    <datatype name="int" library="maDatatypeInteger" />
+    <datatype name="string" library="maDatatypeString" />
+    <datatype name="void" library="maDatatypeVoid" />
+
+    <!-- aliased -->
+    <datatype name="Qt::CaseSensitivity" alias="int" />
+    <datatype name="bool" alias="int" />
+    <datatype name="size_t" alias="int" />
+    <datatype name="QChar" alias="void" />
+
+    <!-- predicate -->
+    <datatype name="QString" class="true" size="4">
+      <members>
+        <member name="length" offset="20" />
+      </members>
+
+      <functions>
+        <!-- CONSTRUCTOR -->
+        <!-- 'constructor' instructs Diablo to insert a call to new(size_t) before construction
+              'implementedconstructor' instructs Diablo to immediately insert a call to this function -->
+        <function type="implementedconstructor" returntype="QString *" identifier="_Z38__DIABLO_META_API__constructor_QStringPKc" is_member="false">
+          <parameter datatype="string" name="value" value="dit is een string" />
+        </function>
+
+        <!-- INTERFACE -->
+        <!-- bool QString::endsWith(QString const&, Qt::CaseSensitivity) const -->
+        <function type="interface" returntype="bool" identifier="_ZNK7QString8endsWithERKS_N2Qt15CaseSensitivityE" can_be_external="true">
+          <parameter datatype="QString&" name="value" />
+          <parameter datatype="Qt::CaseSensitivity" name="caseSensitivity" />
+        </function>
+
+        <!-- int QString::compare(QString const&, Qt::CaseSensitivity) const -->
+        <function type="interface" returntype="int" identifier="_ZNK7QString7compareERKS_N2Qt15CaseSensitivityE" can_be_external="true">
+          <parameter datatype="QString&" name="value" />
+          <parameter datatype="Qt::CaseSensitivity" name="caseSensitivity" />
+        </function>
+
+        <!-- QString& QString::operator=(QString const&) -->
+        <function type="interface" returntype="QString&" identifier="_ZN7QStringaSERKS_" can_be_external="true">
+          <parameter datatype="QString&" name="value" />
+        </function>
+
+        <!-- void QString::append(QString const&) -->
+        <function type="interface" returntype="void" identifier="_ZN7QString6appendERKS_" can_be_external="true">
+          <parameter datatype="QString&" name="value" />
+        </function>
+
+        <!-- void QString::append(QChar*) -->
+        <function type="interface" returntype="void" identifier="_ZN7QString6appendE5QChar" can_be_external="true">
+          <parameter datatype="QChar*" name="value" />
+        </function>
+
+        <!-- TRANSFORMERS -->
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_S0_true">
+          <effects>
+            <effect>
+              <expression>S0=T, S1=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            IF ($[instance].length > $$$maxLength)
+              _ZN7QStringaSERKS_($[instance], $$$end);
+              RETURN;
+            END;
+
+            _ZN7QString6appendERKS_($[instance], $$$end);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_S0_false">
+          <effects>
+            <effect>
+              <expression>S0=F, S1=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            _ZN7QStringaSERKS_($[instance], $$$equals);
+          </implementation>
+        </function>
+      </functions>
+
+      <predicates>
+        <!-- S0: TRUE if string ends with $$$end -->
+        <predicate name="S0">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_S0">
+            <implementation>
+              RETURN _ZNK7QString8endsWithERKS_N2Qt15CaseSensitivityE($[instance], $$$end, 1);
+            </implementation>
+          </function>
+        </predicate>
+
+        <!-- S1: TRUE if string contains $$$equals -->
+        <predicate name="S1">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_S1">
+            <implementation>
+              RETURN _ZNK7QString7compareERKS_N2Qt15CaseSensitivityE($[instance], $$$equals, 1) == 0;
+            </implementation>
+          </function>
+        </predicate>
+      </predicates>
+
+      <!-- per-instance pseudo-random configuration -->
+      <instance>
+        <variables>
+          QString *end;
+          QString *equals;
+          intMaxLength maxLength;
+        </variables>
+
+        <implementation>
+          stringS1 endString = $[generate];
+          stringS2 equalsString = $[generate];
+
+          $$$end = _Z38__DIABLO_META_API__constructor_QStringPKc($endString);
+          $$$equals = _Z38__DIABLO_META_API__constructor_QStringPKc($equalsString);
+          $$$maxLength = $[generate];
+        </implementation>
+      </instance>
+    </datatype>
+
+    <datatype name="stringS1">
+      <values>
+        <value type="string" expression="RANDOM_IN_PROGRAM(ENDS_WITH('found.'))" />
+      </values>
+    </datatype>
+
+    <datatype name="stringS2">
+      <values>
+        <value type="string" expression="RANDOM_IN_PROGRAM(!ENDS_WITH('found.'))" />
+      </values>
+    </datatype>
+
+    <datatype name="intMaxLength">
+      <values>
+        <value type="int" expression="RANGE(20, 35)" />
+      </values>
+    </datatype>
+
+    <!-- entry -->
+    <datatype name="Entry">
+      <members>
+        <member name="group" offset="4" />
+      </members>
+    </datatype>
+
+    <!-- group -->
+    <datatype name="Group" size="144" class="true">
+      <members>
+        <member name="m_parent" offset="4" />
+      </members>
+
+      <functions>
+        <!-- CONSTRUCTOR -->
+        <function type="constructor" returntype="void" identifier="_ZN5GroupC1Ev" is_member="false">
+        </function>
+
+        <!-- DESTRUCTOR -->
+        <!-- *D0* = deleting destructor -->
+        <!-- *D1* = object destructor without calling delete -->
+        <function type="interface" returntype="void" identifier="_ZN5GroupD0Ev">
+        </function>
+
+        <function type="interface" returntype="void" identifier="__DIABLO_META_API__destructor_Group">
+        </function>
+
+        <!-- INTERFACE -->
+        <!-- does nothing when the entry exists already -->
+        <function type="interface" returntype="Entry *" identifier="_ZN5Group16addEntryWithPathERK7QString">
+          <parameter datatype="QString&" name="entryPath" />
+        </function>
+
+        <!-- returns 'nullptr' when the entry is not found -->
+        <function type="interface" returntype="Entry *" identifier="_ZN5Group15findEntryByPathERK7QString">
+          <parameter datatype="QString&" name="entryPath" />
+        </function>
+
+        <!-- void Group::removeEntry(Entry *) -->
+        <function type="interface" returntype="void" identifier="_ZN5Group11removeEntryEP5Entry" can_be_external="true">
+          <parameter datatype="Entry *" name="entry" />
+        </function>
+
+        <!-- void Group::setName(QString&) -->
+        <function type="interface" returntype="void" identifier="_ZN5Group7setNameERK7QString" can_be_external="true">
+          <parameter datatype="QString&" name="name" />
+        </function>
+
+        <function type="interface" returntype="void" identifier="_ZN5Group9setParentEPS_i" can_be_external="true">
+          <parameter datatype="Group*" name="group" />
+          <parameter datatype="int" name="index" />
+        </function>
+
+        <function type="interface" returntype="Group *" identifier="_ZN5Group15findGroupByPathERK7QString" can_be_external="true">
+          <parameter datatype="QString&" name="groupPath" />
+        </function>
+
+        <function type="interface" returntype="Group *" identifier="_ZN5Entry5groupEv" can_be_external="true" is_member="false">
+          <parameter datatype="Entry*" name="this" />
+        </function>
+
+        <!-- TRANSFORMERS -->
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_G0_true">
+          <effects>
+            <effect>
+              <expression>G0=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            Group *newgroup;
+
+            $newgroup = _ZN5Group15findGroupByPathERK7QString($[instance], $$$dir);
+            IF ($newgroup == 0)
+              $newgroup = _ZN5GroupC1Ev();
+              _ZN5Group7setNameERK7QString($newgroup, $$$dir);
+              _ZN5Group9setParentEPS_i($newgroup, $[instance], 0);
+            END;
+
+            _ZN5Group16addEntryWithPathERK7QString($[instance], $$$path);
+          </implementation>
+        </function>
+
+        <!-- removes the entry in the group -->
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_G0_false1">
+          <effects>
+            <effect>
+              <expression>G0=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            Entry *e;
+            Group *g;
+
+            $e = _ZN5Group15findEntryByPathERK7QString($[instance], $$$path);
+
+            IF ($e == 0)
+              RETURN;
+            END;
+
+            $g = _ZN5Entry5groupEv($e);
+            _ZN5Group11removeEntryEP5Entry($g, $e);
+          </implementation>
+        </function>
+
+        <!-- removes the entire group -->
+        <function type="inlinedtransformer" identifier="ABSTRACT_set_G0_false2">
+          <effects>
+            <effect>
+              <expression>G0=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            Group *g;
+
+            $g = _ZN5Group15findGroupByPathERK7QString($[instance], $$$dir);
+
+            IF ($g == 0)
+              RETURN;
+            END;
+
+            _ZN5GroupD0Ev($g);
+          </implementation>
+        </function>
+      </functions>
+
+      <predicates>
+        <!-- G0: TRUE if entry with path $$$path exists -->
+        <predicate name="G0">
+          <function type="inlinedgetter" returntype="bool" identifier="ABSTRACT_get_G0">
+            <implementation>
+              RETURN _ZN5Group15findEntryByPathERK7QString($[instance], $$$path);
+            </implementation>
+          </function>
+        </predicate>
+      </predicates>
+
+      <instance>
+        <variables>
+          QString *path;
+
+          QString *dir;
+          QString *entry;
+        </variables>
+
+        <implementation>
+          stringPathComponent _dir = $[generate];
+          stringEntryComponent _entry = $[generate];
+          stringPathSeparator _sep = $[generate];
+          QString *sep;
+
+          $$$dir = _Z38__DIABLO_META_API__constructor_QStringPKc($_dir);
+          $$$entry = _Z38__DIABLO_META_API__constructor_QStringPKc($_entry);
+          $sep = _Z38__DIABLO_META_API__constructor_QStringPKc($_sep);
+
+          $$$path = _Z38__DIABLO_META_API__constructor_QStringPKc($_dir);
+          _ZN7QString6appendERKS_($$$path, $sep);
+          _ZN7QString6appendERKS_($$$path, $$$entry);
+        </implementation>
+      </instance>
+    </datatype>
+
+    <datatype name="stringPathComponent">
+      <values>
+        <value type="string" expression="RANDOM_IN_PROGRAM(!CONTAINS('/'))" />
+      </values>
+    </datatype>
+
+    <datatype name="stringEntryComponent">
+      <values>
+        <value type="string" expression="RANDOM_IN_PROGRAM(!CONTAINS('/'))" />
+      </values>
+    </datatype>
+
+    <datatype name="stringPathSeparator">
+      <values>
+        <value type="string" value="/" />
+      </values>
+    </datatype>
+  </datatypes>
+
+  <tests>
+    <test name="S0_T" datatype="QString" predicate="S0" value="T" setter="ABSTRACT_set_S0_true" getter="ABSTRACT_get_S0" function="main" resetter="ABSTRACT_set_S0_false" />
+    <test name="S0_F" datatype="QString" predicate="S0" value="F" setter="ABSTRACT_set_S0_false" getter="ABSTRACT_get_S0" function="main" />
+
+    <test name="S1_T" datatype="QString" predicate="S1" value="T" setter="ABSTRACT_set_S0_false" getter="ABSTRACT_get_S1" function="main" />
+    <test name="S1_F" datatype="QString" predicate="S1" value="F" setter="ABSTRACT_set_S0_true" getter="ABSTRACT_get_S1" function="main" />
+
+    <test name="G0_T" datatype="Group" predicate="G0" value="T" setter="ABSTRACT_set_G0_true" getter="ABSTRACT_get_G0" function="main" resetter="ABSTRACT_set_G0_false1" />
+    <test name="G0_Ta" datatype="Group" predicate="G0" value="T" setter="ABSTRACT_set_G0_true" getter="ABSTRACT_get_G0" function="main" resetter="ABSTRACT_set_G0_false2" />
+    <test name="G0_F1" datatype="Group" predicate="G0" value="F" setter="ABSTRACT_set_G0_false1" getter="ABSTRACT_get_G0" function="main" />
+    <test name="G0_F1a" datatype="Group" predicate="G0" value="F" setter="ABSTRACT_set_G0_false1" getter="ABSTRACT_get_G0" function="main" resetter="ABSTRACT_set_G0_false2" />
+    <test name="G0_F2" datatype="Group" predicate="G0" value="F" setter="ABSTRACT_set_G0_false2" getter="ABSTRACT_get_G0" function="main" />
+  </tests>
+</specification>

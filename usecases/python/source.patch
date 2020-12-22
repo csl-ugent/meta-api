@@ -1,0 +1,164 @@
+diff -ru Python-3.7.4.orig/Include/py_curses.h Python-3.7.4/Include/py_curses.h
+--- Python-3.7.4.orig/Include/py_curses.h	2019-07-08 18:03:50.000000000 +0000
++++ Python-3.7.4/Include/py_curses.h	2019-09-06 12:54:51.284553637 +0000
+@@ -31,9 +31,9 @@
+ #endif
+ 
+ #ifdef HAVE_NCURSES_H
+-#include <ncurses.h>
++#include <ncursesw/ncurses.h>
+ #else
+-#include <curses.h>
++#include <ncursesw/curses.h>
+ #endif
+ 
+ #ifdef HAVE_NCURSES_H
+diff -ru Python-3.7.4.orig/Makefile.pre.in Python-3.7.4/Makefile.pre.in
+--- Python-3.7.4.orig/Makefile.pre.in	2019-07-08 18:03:50.000000000 +0000
++++ Python-3.7.4/Makefile.pre.in	2019-09-06 14:12:43.678898080 +0000
+@@ -577,7 +577,7 @@
+ 
+ # Build the interpreter
+ $(BUILDPYTHON):	Programs/python.o $(LIBRARY) $(LDLIBRARY) $(PY3LIBRARY)
+-	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS) $(LDLAST)
++	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS) $(LDLAST) $(DIABLO_SP_OBJECT) -Wl,-Map,$(BUILDPYTHON).map
+ 
+ platform: $(BUILDPYTHON) pybuilddir.txt
+ 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
+diff -ru Python-3.7.4.orig/Modules/Setup.dist Python-3.7.4/Modules/Setup.dist
+--- Python-3.7.4.orig/Modules/Setup.dist	2019-07-08 18:03:50.000000000 +0000
++++ Python-3.7.4/Modules/Setup.dist	2019-09-06 13:14:04.908001488 +0000
+@@ -165,40 +165,40 @@
+ # it, depending on your system -- see the GNU readline instructions.
+ # It's okay for this to be a shared library, too.
+ 
+-#readline readline.c -lreadline -ltermcap
++readline readline.c -lreadline -ltermcap
+ 
+ 
+ # Modules that should always be present (non UNIX dependent):
+ 
+-#array arraymodule.c	# array objects
+-#cmath cmathmodule.c _math.c # -lm # complex math library functions
+-#math mathmodule.c _math.c # -lm # math library functions, e.g. sin()
+-#_contextvars _contextvarsmodule.c  # Context Variables
+-#_struct _struct.c	# binary structure packing/unpacking
+-#_weakref _weakref.c	# basic weak reference support
+-#_testcapi _testcapimodule.c    # Python C API test module
+-#_random _randommodule.c	# Random number generator
+-#_elementtree -I$(srcdir)/Modules/expat -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI _elementtree.c	# elementtree accelerator
+-#_pickle _pickle.c	# pickle accelerator
+-#_datetime _datetimemodule.c	# datetime accelerator
+-#_bisect _bisectmodule.c	# Bisection algorithms
+-#_heapq _heapqmodule.c	# Heap queue algorithm
+-#_asyncio _asynciomodule.c  # Fast asyncio Future
++array arraymodule.c	# array objects
++cmath cmathmodule.c _math.c # -lm # complex math library functions
++math mathmodule.c _math.c # -lm # math library functions, e.g. sin()
++_contextvars _contextvarsmodule.c  # Context Variables
++_struct _struct.c	# binary structure packing/unpacking
++_weakref _weakref.c	# basic weak reference support
++_testcapi _testcapimodule.c    # Python C API test module
++_random _randommodule.c	# Random number generator
++_elementtree -I$(srcdir)/Modules/expat -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI _elementtree.c	# elementtree accelerator
++_pickle _pickle.c	# pickle accelerator
++_datetime _datetimemodule.c	# datetime accelerator
++_bisect _bisectmodule.c	# Bisection algorithms
++_heapq _heapqmodule.c	# Heap queue algorithm
++_asyncio _asynciomodule.c  # Fast asyncio Future
+ 
+-#unicodedata unicodedata.c    # static Unicode character database
++unicodedata unicodedata.c    # static Unicode character database
+ 
+ 
+ # Modules with some UNIX dependencies -- on by default:
+ # (If you have a really backward UNIX, select and socket may not be
+ # supported...)
+ 
+-#fcntl fcntlmodule.c	# fcntl(2) and ioctl(2)
+-#spwd spwdmodule.c		# spwd(3)
+-#grp grpmodule.c		# grp(3)
+-#select selectmodule.c	# select(2); not on ancient System V
++fcntl fcntlmodule.c	# fcntl(2) and ioctl(2)
++spwd spwdmodule.c		# spwd(3)
++grp grpmodule.c		# grp(3)
++select selectmodule.c	# select(2); not on ancient System V
+ 
+ # Memory-mapped files (also works on Win32).
+-#mmap mmapmodule.c
++mmap mmapmodule.c
+ 
+ # CSV file helper
+ #_csv _csv.c
+@@ -223,7 +223,7 @@
+ # are not supported by all UNIX systems:
+ 
+ #nis nismodule.c -lnsl	# Sun yellow pages -- not everywhere
+-#termios termios.c	# Steen Lumholt's termios module
++termios termios.c	# Steen Lumholt's termios module
+ #resource resource.c	# Jeremy Hylton's rlimit interface
+ 
+ #_posixsubprocess _posixsubprocess.c  # POSIX subprocess module helper
+@@ -242,15 +242,15 @@
+ # The _md5 module implements the RSA Data Security, Inc. MD5
+ # Message-Digest Algorithm, described in RFC 1321.
+ 
+-#_md5 md5module.c
++_md5 md5module.c
+ 
+ 
+ # The _sha module implements the SHA checksum algorithms.
+ # (NIST's Secure Hash Algorithms.)
+-#_sha1 sha1module.c
+-#_sha256 sha256module.c
+-#_sha512 sha512module.c
+-#_sha3 _sha3/sha3module.c
++_sha1 sha1module.c
++_sha256 sha256module.c
++_sha512 sha512module.c
++_sha3 _sha3/sha3module.c
+ 
+ # _blake module
+ #_blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
+@@ -326,7 +326,7 @@
+ 
+ 
+ # Helper module for various ascii-encoders
+-#binascii binascii.c
++binascii binascii.c
+ 
+ # Fred Drake's interface to the Python parser
+ #parser parsermodule.c
+@@ -335,7 +335,7 @@
+ # Andrew Kuchling's zlib module.
+ # This require zlib 1.1.3 (or later).
+ # See http://www.gzip.org/zlib/
+-#zlib zlibmodule.c -I$(prefix)/include -L$(exec_prefix)/lib -lz
++zlib zlibmodule.c -I$(prefix)/include -L$(exec_prefix)/lib -lz
+ 
+ # Interface to the Expat XML parser
+ # More information on Expat can be found at www.libexpat.org.
+diff -ru Python-3.7.4.orig/configure Python-3.7.4/configure
+--- Python-3.7.4.orig/configure	2019-07-08 18:03:50.000000000 +0000
++++ Python-3.7.4/configure	2019-09-06 12:52:08.875484955 +0000
+@@ -15998,6 +15998,8 @@
+ ac_save_cppflags="$CPPFLAGS"
+ if test "$cross_compiling" = no; then
+   CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
++else
++  CPPFLAGS="$CPPFLAGS -I${CROSS_SYSROOT}/usr/include/ncursesw"
+ fi
+ 
+ for ac_header in curses.h ncurses.h
+diff -ru Python-3.7.4.orig/setup.py Python-3.7.4/setup.py
+--- Python-3.7.4.orig/setup.py	2019-07-08 18:03:50.000000000 +0000
++++ Python-3.7.4/setup.py	2019-09-06 13:15:26.427540204 +0000
+@@ -1669,7 +1669,7 @@
+             missing.append('_tkinter')
+ 
+         # Build the _uuid module if possible
+-        uuid_incs = find_file("uuid.h", inc_dirs, ["/usr/include/uuid"])
++        uuid_incs = find_file("uuid/uuid.h", inc_dirs, ["/usr/include/uuid"])
+         if uuid_incs is not None:
+             if self.compiler.find_library_file(lib_dirs, 'uuid'):
+                 uuid_libs = ['uuid']

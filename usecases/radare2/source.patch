@@ -1,0 +1,46 @@
+diff --git a/mk/armhf.mk b/mk/armhf.mk
+new file mode 100644
+index 0000000..03602bd
+--- /dev/null
++++ b/mk/armhf.mk
+@@ -0,0 +1,25 @@
++ARCH=arm
++CROSS_TRIPLET=${ARCH}-diablo-linux-gnueabihf
++CROSS=${CROSS_TRIPLET}-
++
++CC=${CROSS}gcc
++USERCC=${CROSS}gcc
++AR=${CROSS}ar
++RANLIB=${CROSS}ranlib
++CC_AR=${AR} -r ${LIBAR}
++PARTIALLD=${CROSS}ld -r --whole-archive
++
++ONELIB=0
++OSTYPE=gnulinux
++PICFLAGS=-fPIC -fpic
++CFLAGS+=${PICFLAGS} -g
++LDFLAGS+=-ldl -pthread -lutil -g
++CC_LIB=${CC} -shared -o
++CFLAGS_INCLUDE=-I
++LDFLAGS_LINK=-l
++LDFLAGS_LINKPATH=-L
++CFLAGS_OPT0=-O0
++CFLAGS_OPT1=-O1
++CFLAGS_OPT2=-O2
++CFLAGS_OPT3=-O3
++CFLAGS_DEBUG=-g
+diff --git a/libr/rules.mk b/libr/rules.mk
+index 2518fce..5d9c7ef 100644
+--- a/libr/rules.mk
++++ b/libr/rules.mk
+@@ -79,8 +79,8 @@ $(LIBSO): $(EXTRA_TARGETS) ${WFD} ${OBJS} ${SHARED_OBJ}
+ 	  if [ $$do = 1 ]; then \
+ 	    [ -n "${SILENT}" ] && \
+ 	    echo "LD $(LIBSO)" || \
+-	    echo "\"${CC_LIB} ${LIBNAME} ${OBJS} ${SHARED_OBJ} ${LINK} ${LDFLAGS}\"" ; \
+-	    ${CC_LIB} ${LIBNAME} ${CFLAGS} ${OBJS} ${SHARED_OBJ} ${LINK} ${LDFLAGS} || exit 1; \
++	    echo "\"${CC_LIB} ${LIBNAME} -Wl,-Map,${LIBNAME}.map ${OBJS} $(DIABLO_SP_OBJECT) ${SHARED_OBJ} ${LINK} ${LDFLAGS}\"" ; \
++	    ${CC_LIB} ${LIBNAME} -Wl,-Map,${LIBNAME}.map ${CFLAGS} ${OBJS} $(DIABLO_SP_OBJECT) ${SHARED_OBJ} ${LINK} ${LDFLAGS} || exit 1; \
+ 	    [ -f "$(LIBR)/stripsyms.sh" ] && sh $(LIBR)/stripsyms.sh ${LIBSO} ${NAME} ; \
+ 	  break ; \
+ 	fi ; done

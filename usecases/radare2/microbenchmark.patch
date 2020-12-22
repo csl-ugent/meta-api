@@ -1,0 +1,49 @@
+diff --git a/libr/rules.mk b/libr/rules.mk
+index 2518fcea2..396e074ce 100644
+--- a/libr/rules.mk
++++ b/libr/rules.mk
+@@ -79,8 +79,8 @@ $(LIBSO): $(EXTRA_TARGETS) ${WFD} ${OBJS} ${SHARED_OBJ}
+          if [ $$do = 1 ]; then \
+            [ -n "${SILENT}" ] && \
+            echo "LD $(LIBSO)" || \
+-           echo "\"${CC_LIB} ${LIBNAME} ${OBJS} ${SHARED_OBJ} ${LINK} ${LDFLAGS}\"" ; \
+-           ${CC_LIB} ${LIBNAME} ${CFLAGS} ${OBJS} ${SHARED_OBJ} ${LINK} ${LDFLAGS} || exit 1; \
++           echo "\"${CC_LIB} ${LIBNAME} -Wl,-Map,${LIBNAME}.map ${OBJS} $(DIABLO_SP_OBJECT) ${SHARED_OBJ} ${LINK} ${LDFLAGS}\"" ; \
++           ${CC_LIB} ${LIBNAME} -Wl,-Map,${LIBNAME}.map ${CFLAGS} ${OBJS} $(DIABLO_SP_OBJECT) ${SHARED_OBJ} ${LINK} ${LDFLAGS} || exit 1; \
+            [ -f "$(LIBR)/stripsyms.sh" ] && sh $(LIBR)/stripsyms.sh ${LIBSO} ${NAME} ; \
+          break ; \
+        fi ; done
+diff --git a/libr/util/Makefile b/libr/util/Makefile
+index e09c04561..5244f78a8 100644
+--- a/libr/util/Makefile
++++ b/libr/util/Makefile
+@@ -21,7 +21,7 @@ OBJS+=seven.o randomart.o zip.o debruijn.o log.o getopt.o table.o
+ OBJS+=utf8.o utf16.o utf32.o strbuf.o lib.o name.o spaces.o signal.o syscmd.o
+ OBJS+=diff.o bdiff.o stack.o queue.o tree.o idpool.o assert.o
+ OBJS+=punycode.o pkcs7.o x509.o asn1.o astr.o json_indent.o skiplist.o pj.o
+-OBJS+=rbtree.o qrcode.o vector.o str_trim.o ascii_table.o
++OBJS+=rbtree.o qrcode.o vector.o str_trim.o ascii_table.o measure.o
+ 
+ # DO NOT BUILD r_big api (not yet used and its buggy)
+ ifeq (1,0)
+diff --git a/libr/util/measure.c b/libr/util/measure.c
+index 000000000..9800b5d10
+--- /dev/null
++++ b/libr/util/measure.c
+@@ -0,0 +1,16 @@
++void DIABlO_measure() __attribute__((constructor(65501)));
++void DIABlO_measure() {
++#define ASM __asm__
++       ASM ("nop");
++
++#define NR_ITERATIONS 250000000
++    register unsigned int i = 0;
++    for (i = 0; i < NR_ITERATIONS; i++) {
++        ASM ("nop");
++        ASM ("nop");
++        ASM ("nop");
++    }
++
++    if (i == NR_ITERATIONS)
++      exit(0);
++}

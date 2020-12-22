@@ -1,0 +1,394 @@
+<specification>
+  <configuration>
+    <parameter name="not_before_function" value="main" />
+    <parameter name="project_name" value="python" />
+  </configuration>
+
+  <!-- global variables -->
+  <variables>
+    string1 Kx;
+    string1 K1x;
+    string2 K2x;
+  </variables>
+
+  <constraints>
+    <constraint>$$K1x != $$K2x</constraint>
+    <constraint>$$K1x == $$Kx</constraint>
+  </constraints>
+
+  <datatypes>
+    <datatype name="size_t" library="maDatatypeInteger">
+    </datatype>
+
+    <datatype name="string" library="maDatatypeString">
+    </datatype>
+
+    <datatype name="register" library="maDatatypeRegister">
+    </datatype>
+
+    <datatype name="function pointer" library="maDatatypeFunctionPointer">
+    </datatype>
+
+    <datatype name="void" library="maDatatypeVoid">
+    </datatype>
+
+    <datatype name="int" alias="size_t" />
+
+    <!-- Hashtable instance -->
+    <datatype name="_Py_hashtable_t">
+      <functions>
+        <!-- don't touch these functions, dangerous! -->
+        <function type="interface" returntype="void" identifier="PyThread_acquire_lock_timed">
+          <parameter datatype="size_t" name="lock" />
+          <parameter datatype="size_t" name="microseconds" />
+          <parameter datatype="size_t" name="intr_flag" />
+        </function>
+
+        <!-- PROTOTYPE DECLARATIONS
+              of functions used in the abstract implementations.
+              These are just the XML-ified versions of the C-style prototype declarations in the header file. -->
+        <function type="constructor" returntype="_Py_hashtable_t*" identifier="_Py_hashtable_new">
+          <parameter datatype="size_t" name="key_size" value="4" />
+          <parameter datatype="size_t" name="data_size" value="4" />
+          <parameter datatype="_Py_hashtable_hash_func" name="hash_func" value="_Py_hashtable_hash_ptr" />
+          <parameter datatype="_Py_hashtable_compare_func" name="compare_func" value="_Py_hashtable_compare_direct" />
+        </function>
+
+        <function type="interface" returntype="int" identifier="_Py_hashtable_pop">
+          <parameter datatype="_Py_hashtable_t *" name="ht" value="[instance]" />
+          <parameter datatype="size_t" name="key_size" />
+          <parameter datatype="const void *" name="pkey" />
+          <parameter datatype="size_t" name="data_size" />
+          <parameter datatype="void *" name="data" />
+        </function>
+
+        <function type="interface" returntype="int" identifier="_Py_hashtable_set">
+          <parameter datatype="_Py_hashtable_t *" name="ht" value="[instance]" />
+          <parameter datatype="size_t" name="key_size" />
+          <parameter datatype="const void *" name="pkey" />
+          <parameter datatype="size_t" name="data_size" />
+          <parameter datatype="const void *" name="data" />
+        </function>
+
+        <!--
+          int _Py_hashtable_get(_Py_hashtable_t *ht, size_t key_size,const void *pkey, size_t data_size, void *data)
+        -->
+        <function type="interface" returntype="int" identifier="_Py_hashtable_get">
+          <parameter datatype="_Py_hashtable_t *" name="ht" value="[instance]" />
+          <parameter datatype="size_t" name="key_size" />
+          <parameter datatype="const void *" name="pkey" />
+          <parameter datatype="size_t" name="data_size" />
+          <parameter datatype="void *" name="data" />
+        </function>
+
+        <!--
+          _Py_hashtable_entry_t *_Py_hashtable_get_entry(_Py_hashtable_t *ht, size_t key_size, const void *pkey)
+        -->
+        <function type="interface" returntype="void *" identifier="_Py_hashtable_get_entry">
+          <parameter datatype="_Py_hashtable_t *" name="ht" value="[instance]" />
+          <parameter datatype="size_t" name="key_size" />
+          <parameter datatype="const void *" name="pkey" />
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_0_true">
+          <effects>
+            <effect>
+              <expression>P0=T, P1=?</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            string2 V = $[generate];
+
+            _Py_hashtable_pop($[instance], 4, $$Kx, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$Kx, 4, $V);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_0_false">
+          <effects>
+            <effect>
+              <expression>P0=F, P1=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            int x;
+
+            _Py_hashtable_pop($[instance], 4, $$Kx, 4, &$x);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1_true1">
+          <effects>
+            <effect>
+              <expression>P0=T, P1=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            string2 V = $[generate];
+
+            _Py_hashtable_pop($[instance], 4, $$K1x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K1x, 4, $V);
+            _Py_hashtable_pop($[instance], 4, $$K2x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K2x, 4, $V);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1_true2">
+          <effects>
+            <effect>
+              <expression>P0=T, P1=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            pointer V = $[generate];
+
+            _Py_hashtable_pop($[instance], 4, $$K1x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K1x, 4, $V);
+            _Py_hashtable_pop($[instance], 4, $$K2x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K2x, 4, $V);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1_true3">
+          <effects>
+            <effect>
+              <expression>P0=T, P1=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            string1 V = $[generate];
+
+            _Py_hashtable_pop($[instance], 4, $$K1x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K1x, 4, $V);
+            _Py_hashtable_pop($[instance], 4, $$K2x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K2x, 4, $V);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1_false1">
+          <effects>
+            <effect>
+              <expression>P0=F, P1=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            int x;
+
+            _Py_hashtable_pop($[instance], 4, $$K1x, 4, &$x);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1_false2">
+          <effects>
+            <effect>
+              <expression>P0=U, P1=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            int x;
+
+            _Py_hashtable_pop($[instance], 4, $$K2x, 4, &$x);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1_false3">
+          <effects>
+            <effect>
+              <constraint>$V1 != $V2</constraint>
+              <expression>P0=T, P1=F</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            pointer V1 = $[generate];
+            pointer V2 = $[generate];
+
+            _Py_hashtable_pop($[instance], 4, $$K1x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K1x, 4, $V1);
+            _Py_hashtable_pop($[instance], 4, $$K2x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K2x, 4, $V2);
+          </implementation>
+        </function>
+
+        <function type="inlinedtransformer" identifier="ABSTRACT_ht_set_predicate_1">
+          <effects>
+            <effect>
+              <constraint>$V1 != $V2</constraint>
+              <expression>P0=T, P1=F</expression>
+            </effect>
+            <effect>
+              <constraint>$V1 == $V2</constraint>
+              <expression>P0=T, P1=T</expression>
+            </effect>
+          </effects>
+
+          <implementation>
+            pointer V1 = $[generate];
+            pointer V2 = $[generate];
+
+            _Py_hashtable_pop($[instance], 4, $$K1x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K1x, 4, $V1);
+            _Py_hashtable_pop($[instance], 4, $$K2x, 0, NULL);
+            _Py_hashtable_set($[instance], 4, $$K2x, 4, $V2);
+          </implementation>
+        </function>
+      </functions>
+
+      <predicates>
+        <predicate name="P0">
+          <function type="inlinedgetter" returntype="size_t" identifier="ABSTRACT_ht_get_predicate_0">
+            <implementation>
+              IF (_Py_hashtable_get_entry($[instance], 4, $$Kx))
+                RETURN 1;
+              END;
+
+              RETURN 0;
+            </implementation>
+          </function>
+        </predicate>
+
+        <predicate name="P1">
+          <function type="inlinedgetter" returntype="size_t" identifier="ABSTRACT_ht_get_predicate_1">
+            <implementation>
+              int V1;
+              int V2;
+
+              IF !(_Py_hashtable_get($[instance], 4, $$K1x, 4, &$V1))
+                RETURN 0;
+              END;
+
+              IF !(_Py_hashtable_get($[instance], 4, $$K2x, 4, &$V2))
+                RETURN 0;
+              END;
+
+              RETURN $V1 == $V2;
+            </implementation>
+          </function>
+        </predicate>
+      </predicates>
+    </datatype>
+
+    <!-- <datatype name="PyLong">
+      <functions>
+        <function type="constructor" returntype="PyObject *" identifier="PyLong_FromLong">
+          <parameter datatype="long" name="ival" />
+        </function>
+
+        <function type="compare" returntype="int" identifier="PyObject_RichCompareBool">
+          <parameter datatype="PyObject *" name="v" />
+          <parameter datatype="PyObject *" name="w" />
+          <parameter datatype="int" name="op" />
+        </function>
+      </functions>
+    </datatype> -->
+
+    <!-- <datatype name="PyDict">
+      <functions>
+        <function type="constructor" returntype="PyObject *" identifier="PyDict_New" />
+      </functions>
+    </datatype> -->
+
+    <datatype name="_Py_hashtable_hash_func" alias="function pointer" />
+    <datatype name="_Py_hashtable_compare_func" alias="function pointer" />
+
+    <!-- defines a fixed string that is present in the original program -->
+    <datatype name="string1">
+      <values>
+        <value type="string" value="dit is een string" />
+      </values>
+    </datatype>
+
+    <!-- defines a random, but in the original program present, string -->
+    <datatype name="string2">
+      <values>
+        <value type="string" expression="RANDOM_IN_PROGRAM" />
+      </values>
+    </datatype>
+
+    <!-- defines a custom, fixed string -->
+    <datatype name="string3">
+      <values>
+        <value type="string" expression="IN_PROGRAM('stdin')" />
+      </values>
+    </datatype>
+
+    <!-- can be anything: Diablo can use the contents of a random register -->
+    <!-- <datatype name="anything"> -->
+      <!-- <values> -->
+        <!-- <value type="register" expression="RANDOM" /> -->
+        <!-- <value type="register" value="5" /> -->
+        <!-- <value type="register" value="7" /> -->
+        <!-- <value type="string3" /> -->
+        <!-- <value type="register" value="13" /> -->
+      <!-- </values> -->
+    <!-- </datatype> -->
+    <datatype name="anything" alias="pointer" />
+
+    <datatype name="pointer">
+      <values>
+        <!-- the key length is set to '4', so only the first 4 characters of the strings are taken into account for the key. -->
+        <value type="string1" compare_length="4" />
+        <value type="string2" compare_length="4" />
+        <value type="string3" compare_length="4" />
+      </values>
+    </datatype>
+
+    <datatype name="ranged_size_t">
+      <values>
+        <value type="size_t" expression="RANGE(10, 15)" />
+        <value type="size_t" expression="RANGE(100, 125)" />
+        <!-- <value type="size_t" expression="LIBRARY(maExampleLibrary, my_function, 10, 15)" /> -->
+      </values>
+    </datatype>
+
+  </datatypes>
+
+  <tests>
+    <test name="P0_T" datatype="_Py_hashtable_t" predicate="P0" value="T" setter="ABSTRACT_ht_set_predicate_0_true" getter="ABSTRACT_ht_get_predicate_0" resetter="ABSTRACT_ht_set_predicate_0_false" />
+    <test name="P0_F" datatype="_Py_hashtable_t" predicate="P0" value="F" setter="ABSTRACT_ht_set_predicate_0_false" getter="ABSTRACT_ht_get_predicate_0" />
+
+    <test name="P1_T1a" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_true2" />
+    <test name="P1_T1b" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_true3" />
+    <test name="P1_T1c" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="1" />
+    <test name="P1_T1" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false1" />
+    <test name="P1_T1d" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false2" />
+    <test name="P1_T1e" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false3" />
+    <test name="P1_T1f" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_T2a" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_true3" />
+    <test name="P1_T2b" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="1" />
+    <test name="P1_T2c" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false1" />
+    <test name="P1_T2" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false2" />
+    <test name="P1_T2d" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false3" />
+    <test name="P1_T2e" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_T3a" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true3" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="1" />
+    <test name="P1_T3b" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true3" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false1" />
+    <test name="P1_T3c" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true3" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false2" />
+    <test name="P1_T3" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true3" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false3" />
+    <test name="P1_T3d" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1_true3" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_T4" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1" setter_constraint="1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false1" />
+    <test name="P1_T4a" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1" setter_constraint="1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false2" />
+    <test name="P1_T4b" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1" setter_constraint="1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false3" />
+    <test name="P1_T4c" datatype="_Py_hashtable_t" predicate="P1" value="T" setter="ABSTRACT_ht_set_predicate_1" setter_constraint="1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_F1" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1_false1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false2" />
+    <test name="P1_F1a" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1_false1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false3" />
+    <test name="P1_F1b" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1_false1" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_F2" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1_false2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1_false3" />
+    <test name="P1_F2a" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1_false2" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_F3" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1_false3" getter="ABSTRACT_ht_get_predicate_1" resetter="ABSTRACT_ht_set_predicate_1" resetter_constraint="0" />
+
+    <test name="P1_F4" datatype="_Py_hashtable_t" predicate="P1" value="F" setter="ABSTRACT_ht_set_predicate_1" setter_constraint="0" getter="ABSTRACT_ht_get_predicate_1" />
+  </tests>
+</specification>
